@@ -15,7 +15,6 @@ import java.util.Arrays;
 
 public class CustomAnalyzer extends Analyzer {
 
-    // Define your stop words list
     private static final List<String> STOP_WORDS = Arrays.asList(
         "a", "an", "the", "is", "are", "and", "or", "but", "not", "this", "that", 
         "with", "by", "for", "on", "of", "to", "in", "at", "from", "it", "its", 
@@ -41,14 +40,12 @@ public class CustomAnalyzer extends Analyzer {
 
     @Override
     protected TokenStreamComponents createComponents(String fieldName) {
-        // Tokenizer: StandardTokenizer
         StandardTokenizer tokenizer = new StandardTokenizer();
 
-        // Filters: LowerCaseFilter, LengthFilter, StopFilter, EdgeNGramFilter
         TokenStream tokenStream = new LowerCaseFilter(tokenizer);
         tokenStream = new LengthFilter(tokenStream, 2, 20);
         tokenStream = new StopFilter(tokenStream, STOP_WORDS_SET);
-        tokenStream = new EdgeNGramTokenFilter(tokenStream, 4, 10, true); // Min 1 and Max 10 for EdgeNGram
+        tokenStream = new EdgeNGramTokenFilter(tokenStream, 4, 10, true);
 
         return new TokenStreamComponents(tokenizer, tokenStream);
     }
