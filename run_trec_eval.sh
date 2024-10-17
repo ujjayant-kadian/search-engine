@@ -16,6 +16,8 @@ RESULTS_FILES=(
     "$RESULTS_DIR/Standard_Analyzer_VSM_results.txt"
     "$RESULTS_DIR/Whitespace_Analyzer_BM25_results.txt"
     "$RESULTS_DIR/Whitespace_Analyzer_VSM_results.txt"
+    "$RESULTS_DIR/English_Analyzer_BM25_results.txt"
+    "$RESULTS_DIR/English_Analyzer_VSM_results.txt"
 )
 
 for results_file in "${RESULTS_FILES[@]}"; do

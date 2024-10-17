@@ -1,6 +1,3 @@
 target/
 
-eval_results/
-results/
-
 dependency-reduced-pom.xml

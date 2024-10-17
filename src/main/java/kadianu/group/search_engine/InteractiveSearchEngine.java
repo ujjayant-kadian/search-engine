@@ -5,8 +5,10 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import kadianu.group.analyzers.CustomAnalyzer;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.*;
@@ -17,25 +19,30 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InteractiveSearchEngine {
 
     private static final String[] INDEX_DIRS = {
             "index/standard_index",
             "index/custom_index",
-            "index/whitespace_index"
+            "index/whitespace_index",
+            "index/english_index"
     };
 
     private static final String[] ANALYZER_NAMES = {
             "Standard Analyzer",
             "Custom Analyzer",
-            "Whitespace Analyzer"
+            "Whitespace Analyzer",
+            "English Analyzer"
     };
 
     private static final Analyzer[] ANALYZERS = {
             new StandardAnalyzer(),
             new CustomAnalyzer(),
-            new WhitespaceAnalyzer()
+            new WhitespaceAnalyzer(),
+            new EnglishAnalyzer()
     };
 
     private static final String RESULTS_DIR = "results/";
@@ -117,7 +124,19 @@ public class InteractiveSearchEngine {
 
             IndexSearcher searcher = new IndexSearcher(reader);
             searcher.setSimilarity(similarity);
-            Query query = new QueryParser("content", analyzer).parse(userQuery);
+            
+            Map<String, Float> boosts = new HashMap<>();
+            boosts.put("title", 1.5f);
+            boosts.put("author", 0.5f);
+            boosts.put("content", 1.5f);
+
+            MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
+                new String[]{"title", "author", "content"}, 
+                analyzer, 
+                boosts
+            );
+            
+            Query query = queryParser.parse(sanitizeQuery(userQuery));
 
 
             ScoreDoc[] hits = searcher.search(query, 50).scoreDocs;
@@ -133,5 +152,15 @@ public class InteractiveSearchEngine {
         }
 
         return results;
+    }
+
+    private static String sanitizeQuery(String queryText) {
+        // remove leading * or ? in each term
+        queryText = queryText.replaceAll("[\\*\\?]", "");
+
+        // escape special characters that could interfere with parsing
+        queryText = queryText.replaceAll("([+\\-!(){}\\[\\]^\"~*?:\\/\\\\])", "\\\\$1");
+
+        return queryText;
     }
 }

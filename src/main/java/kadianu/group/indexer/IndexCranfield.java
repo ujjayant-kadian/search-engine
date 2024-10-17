@@ -5,6 +5,7 @@ import kadianu.group.analyzers.CustomAnalyzer;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -20,6 +21,7 @@ public class IndexCranfield {
     private static final String STANDARD_INDEX_DIR = "index/standard_index";
     private static final String CUSTOM_INDEX_DIR = "index/custom_index";
     private static final String WHITESPACE_INDEX_DIR = "index/whitespace_index";
+    private static final String ENGLISH_INDEX_DIR = "index/english_index";
     private static final String CRANFIELD_FILE = "cran/cran.all.1400";
 
     public static void main(String[] args) {
@@ -35,6 +37,9 @@ public class IndexCranfield {
 
             indexDocuments(new WhitespaceAnalyzer(), WHITESPACE_INDEX_DIR, documents);
             System.out.println("Whitespace Indexing completed successfully.");
+
+            indexDocuments(new EnglishAnalyzer(), ENGLISH_INDEX_DIR, documents);
+            System.out.println("English Indexing completed successfully.");
 
         } catch (Exception e) {
             e.printStackTrace();

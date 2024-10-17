@@ -5,8 +5,10 @@ import org.apache.lucene.analysis.Analyzer;
 import kadianu.group.analyzers.CustomAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.similarities.*;
@@ -16,25 +18,30 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SearchEngine {
 
     private static final String[] INDEX_DIRS = {
             "index/standard_index",
             "index/custom_index",
-            "index/whitespace_index"
+            "index/whitespace_index",
+            "index/english_index"
     };
 
     private static final String[] ANALYZER_NAMES = {
             "Standard Analyzer",
             "Custom Analyzer",
-            "Whitespace Analyzer"
+            "Whitespace Analyzer",
+            "English Analyzer"
     };
 
     private static final Analyzer[] ANALYZERS = {
         new StandardAnalyzer(),
         new CustomAnalyzer(),
-        new WhitespaceAnalyzer()
+        new WhitespaceAnalyzer(),
+        new EnglishAnalyzer()
     };
 
     private static final String RESULTS_DIR = "results/";
@@ -57,24 +64,35 @@ public class SearchEngine {
         }
     }
 
-    private static void searchAndSaveResults(String indexDir, String scoringApproaches, List<QueryData> queries, String analyzerName, Analyzer analyzer, Similarity similarity) throws Exception {
+    private static void searchAndSaveResults(String indexDir, String scoringApproach, List<QueryData> queries, String analyzerName, Analyzer analyzer, Similarity similarity) throws Exception {
         try (FSDirectory directory = FSDirectory.open(Paths.get(indexDir));
              DirectoryReader reader = DirectoryReader.open(directory)) {
 
             IndexSearcher searcher = new IndexSearcher(reader);
             searcher.setSimilarity(similarity);
 
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(RESULTS_DIR + analyzerName.replace(" ", "_") + "_" + scoringApproaches + "_results.txt"))) {
-                for (QueryData queryData : queries) {
-                    Query query = new QueryParser("content", analyzer).parse(sanitizeQuery(queryData.getQueryText()));
+            Map<String, Float> boosts = new HashMap<>();
+            boosts.put("title", 1.5f);
+            boosts.put("author", 0.5f);
+            boosts.put("content", 1.5f);
 
-                    ScoreDoc[] hits = searcher.search(query, 50).scoreDocs;
+            MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
+                new String[]{"title", "author", "content"}, 
+                analyzer, 
+                boosts
+            );
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(RESULTS_DIR + analyzerName.replace(" ", "_") + "_" + scoringApproach + "_results.txt"))) {
+                for (QueryData queryData : queries) {
+                    Query query = queryParser.parse(sanitizeQuery(queryData.getQueryText()));
+
+                    ScoreDoc[] hits = searcher.search(query, 1000).scoreDocs;
 
                     for (int rank = 0; rank < hits.length; rank++) {
                         ScoreDoc hit = hits[rank];
                         String docId = reader.document(hit.doc).get("id");
                         
-                        writer.write(String.format("%s 0 %s %d %.4f my_run_id%n", queryData.getId(), docId, rank + 1, hit.score));
+                        writer.write(String.format("%s 0 %s %d %.4f %s_%s%n", queryData.getId(), docId, rank + 1, hit.score, analyzerName, scoringApproach));
                     }
                 }
             } catch (Exception e) {
