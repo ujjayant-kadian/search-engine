@@ -22,6 +22,7 @@ def plot_bargraph(metric_name, values, y_label, file_name):
     ax.set_title(f'{metric_name} for Different Analyzers')
     ax.set_xlabel('Analyzers')
     ax.set_ylabel(y_label)
+    ax.set_xticks(range(len(analyzers)))
     ax.set_xticklabels(analyzers, rotation=45, ha="right")
 
     for bar in bars:
