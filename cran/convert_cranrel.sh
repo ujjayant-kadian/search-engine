@@ -4,11 +4,13 @@ input_file="cranqrel"
 output_file="cran.qrels.trec"
 
 awk '{
+    query_id = sprintf("%03d", $1)
+    doc_id = $2
     relevance = $3
     if (relevance == 1 || relevance == 2 || relevance == 3) {
-        print $1 " 0 " $2 " 1"
+        print query_id " 0 " doc_id " " relevance
     } else {
-        print $1 " 0 " $2 " 0"
+        print query_id " 0 " doc_id " 0"
     }
 }' "$input_file" > "$output_file"
 
