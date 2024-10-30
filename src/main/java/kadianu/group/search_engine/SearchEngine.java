@@ -83,17 +83,20 @@ public class SearchEngine {
             );
 
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(RESULTS_DIR + analyzerName.replace(" ", "_") + "_" + scoringApproach + "_results.txt"))) {
+                int mappedQueryId = 1; 
                 for (QueryData queryData : queries) {
-                    Query query = queryParser.parse(sanitizeQuery(queryData.getQueryText()));
+                    String formattedMappedQueryId = String.format("%03d", mappedQueryId);
 
+                    Query query = queryParser.parse(sanitizeQuery(queryData.getQueryText()));
                     ScoreDoc[] hits = searcher.search(query, 1000).scoreDocs;
 
                     for (int rank = 0; rank < hits.length; rank++) {
                         ScoreDoc hit = hits[rank];
                         String docId = reader.document(hit.doc).get("id");
                         
-                        writer.write(String.format("%s 0 %s %d %.4f %s_%s%n", queryData.getId(), docId, rank + 1, hit.score, analyzerName, scoringApproach));
+                        writer.write(String.format("%s 0 %s %d %.4f %s_%s%n", formattedMappedQueryId, docId, rank + 1, hit.score, analyzerName, scoringApproach));
                     }
+                    mappedQueryId++;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
