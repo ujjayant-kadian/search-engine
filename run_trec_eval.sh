@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TREC_EVAL_PATH="/home/azureuser/assignment-1/trec_eval-9.0.7/trec_eval"
+TREC_EVAL_PATH="/home/ujjayant-kadian/College/trec_eval-9.0.8/trec_eval"
 
 QRELS_FILE="cran/cran.qrels.trec"
 

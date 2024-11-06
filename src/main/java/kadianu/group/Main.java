@@ -1,11 +1,11 @@
 package kadianu.group;
 
-import kadianu.group.indexer.IndexCranfield;
-import kadianu.group.search_engine.SearchEngine;
-import kadianu.group.search_engine.InteractiveSearchEngine;
-
 import java.io.File;
 import java.util.Scanner;
+
+import kadianu.group.indexer.IndexCranfield;
+import kadianu.group.search_engine.InteractiveSearchEngine;
+import kadianu.group.search_engine.SearchEngine;
 
 public class Main {
     
@@ -45,7 +45,8 @@ public class Main {
 
     private static void runTrecEval() {
         try {
-            Process process = Runtime.getRuntime().exec("/home/azureuser/assignment-1/kadianu/run_trec_eval.sh");
+            @SuppressWarnings("deprecation")
+            Process process = Runtime.getRuntime().exec("/home/ujjayant-kadian/College/search-engine/run_trec_eval.sh");
             process.waitFor();
         } catch (Exception e) {
             e.printStackTrace();
